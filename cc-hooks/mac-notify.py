@@ -34,11 +34,15 @@ def notify_osascript(title, subtitle, message, sound="Glass"):
         "display notification (item 3 of argv) with title (item 1 of argv) "
         "subtitle (item 2 of argv) sound name (item 4 of argv)"
     )
-    subprocess.run(
+    result = subprocess.run(
         ["osascript", "-e", "on run argv", "-e", statement, "-e", "end run", title, subtitle, message, sound],
-        check=True,
         capture_output=True,
+        text=True,
     )
+    if result.returncode != 0:
+        # osascript explains the failure on stderr ("execution error: ..."), which
+        # says more than the exit status alone.
+        raise RuntimeError(result.stderr.strip() or f"osascript exited with status {result.returncode}")
 
 
 # Main execution
